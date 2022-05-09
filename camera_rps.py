@@ -1,6 +1,6 @@
-import cv2
-from keras.models import load_model
 import numpy as np
+from keras.models import load_model
+import cv2
 
 
 def get_prediction(model_name):
