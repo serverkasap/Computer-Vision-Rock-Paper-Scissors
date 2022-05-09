@@ -12,11 +12,13 @@ def get_prediction(model_name, no_sec):
     cap = cv2.VideoCapture(0)
     data = np.ndarray(shape=(1, 224, 224, 3), dtype=np.float32)
 
+    quit = False
+
     # Timer starts
     starttime = time.time()
     lasttime = starttime
 
-    cnt = no_sec - 1
+    cnt = no_sec
 
     while True:
         ret, frame = cap.read()
@@ -28,22 +30,35 @@ def get_prediction(model_name, no_sec):
         data[0] = normalized_image
         prediction = model.predict(data)
 
+        cv2.putText(frame, "Press q to quit", (200, 50),
+                    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0))
+
+        cv2.putText(frame, f"{cnt}", (300, 150),
+                    cv2.FONT_HERSHEY_SCRIPT_COMPLEX, 2, (255, 0, 0))
+
         cv2.imshow('frame', frame)
 
-        if lasttime + 1 <= time.time():
-            print(f"{cnt}...", end=' ', flush=True)
-            cnt -= 1
-            lasttime = time.time()
-
         # Press q to close the window
-        if (cv2.waitKey(1) & 0xFF == ord('q')) or (starttime + no_sec <= time.time()):
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            quit = True
+            break
+
+        if starttime + no_sec <= time.time():
             print("\nTime is up!")
             break
+
+        if lasttime + 1 <= time.time():
+            #print(f"{cnt}...", end=' ', flush=True)#
+            cnt -= 1
+            lasttime = time.time()
 
     # After the loop release the cap object
     cap.release()
     # Destroy all the windows
     cv2.destroyAllWindows()
+
+    if quit == True:
+        return -1
 
     return [prediction[0][0], prediction[0][1], prediction[0][2], prediction[0][3]]
 
@@ -58,6 +73,9 @@ def get_user_choice(no_sec):
     while(True):
         pred = get_prediction("keras_model.h5", no_sec)
 
+        if pred == -1:
+            return -1
+
         max_pred = pred.index(max(pred))
 
         if max_pred == 0:
@@ -71,12 +89,12 @@ def get_user_choice(no_sec):
             user_choice = "scissor"
         else:
             print("You have chosen Nothing => ", end='')
-            user_choice = None
+            user_choice = "nothing"
 
         print("Rock:", round(pred[0], 2), "Paper:", round(pred[1], 2), "Scissor:",
               round(pred[2], 2), "Nothing:", round(pred[3], 2))
 
-        if user_choice != None:
+        if user_choice != "nothing":
             break
         else:
             print("Please show a valid choice!")
@@ -118,6 +136,10 @@ def play():
     while True:
         computer_choice = get_computer_choice()
         user_choice = get_user_choice(5)
+
+        if user_choice == -1:
+            print("\nExiting as per user request...")
+            return -1
 
         print(f"The computer has chosen {computer_choice}.")
 
