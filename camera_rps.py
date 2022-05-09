@@ -1,6 +1,7 @@
 import numpy as np
 from keras.models import load_model
 import cv2
+import random
 
 
 def get_prediction(model_name):
@@ -33,19 +34,81 @@ def get_prediction(model_name):
     return [prediction[0][0], prediction[0][1], prediction[0][2], prediction[0][3]]
 
 
-if __name__ == '__main__':
-    pred = get_prediction("keras_model.h5")
+def get_computer_choice():
+    return random.choice(["rock", "paper", "scissors"])
 
-    max_pred = pred.index(max(pred))
 
-    if max_pred == 0:
-        print("Rock => ", end='')
-    elif max_pred == 1:
-        print("Paper => ", end='')
-    elif max_pred == 2:
-        print("Scissor => ", end='')
+def get_user_choice():
+    print("Please show your choice: ")
+
+    while(True):
+        pred = get_prediction("keras_model.h5")
+
+        max_pred = pred.index(max(pred))
+
+        if max_pred == 0:
+            print("You have chosen Rock => ", end='')
+            user_choice = "rock"
+        elif max_pred == 1:
+            print("You have chosen Paper => ", end='')
+            user_choice = "paper"
+        elif max_pred == 2:
+            print("You have chosen Scissor => ", end='')
+            user_choice = "scissor"
+        else:
+            print("You have chosen Nothing => ", end='')
+            user_choice = None
+
+        print("Rock:", round(pred[0], 2), "Paper:", round(pred[1], 2), "Scissor:",
+              round(pred[2], 2), "Nothing:", round(pred[3], 2))
+
+        if user_choice != None:
+            break
+        else:
+            print("Please show a valid choice!")
+
+    return user_choice
+
+
+def get_winner(computer_choice, user_choice):
+    if computer_choice == "rock":
+        if user_choice == "rock":
+            return "tie"
+        elif user_choice == "paper":
+            return "User"
+        else:
+            return "Computer"
+
+    if computer_choice == "paper":
+        if user_choice == "rock":
+            return "Computer"
+        elif user_choice == "paper":
+            return "tie"
+        else:
+            return "User"
+
+    if computer_choice == "scissors":
+        if user_choice == "rock":
+            return "User"
+        elif user_choice == "paper":
+            return "Computer"
+        else:
+            return "tie"
+
+
+def play():
+    computer_choice = get_computer_choice()
+    user_choice = get_user_choice()
+
+    print(f"The computer has chosen {computer_choice}.")
+
+    winner = get_winner(computer_choice, user_choice)
+
+    if winner == "tie":
+        print("There is no winner.")
     else:
-        print("Nothing => ", end='')
+        print(f"The winner is {winner}.")
 
-    print("Rock:", round(pred[0], 2), "Paper:", round(pred[1], 2), "Scissor:",
-          round(pred[2], 2), "Nothing:", round(pred[3], 2))
+
+if __name__ == '__main__':
+    play()
